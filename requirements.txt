@@ -1,0 +1,15 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+gunicorn>=22.0.0
+pydantic>=2.7.0
+redis>=5.0.0
+qiskit>=1.1.0
+qiskit-aer>=0.14.0
+amazon-braket-sdk>=1.82.0
+numpy>=1.26.0
+python-dotenv>=1.0.0
+slowapi>=0.1.9
+python-json-logger>=2.0.7
+
+# Uncomment to enable real IBM QPU access (use_real_hardware=True):
+# qiskit-ibm-runtime>=0.24.0

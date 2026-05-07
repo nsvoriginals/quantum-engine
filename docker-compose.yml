@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      REDIS_URL: redis://redis:6379
+      RATE_LIMIT_STORAGE: redis://redis:6379
+      LOG_LEVEL: INFO
+      LOG_FORMAT: text
+      ALLOWED_ORIGINS: "*"
+      WORKERS: "2"
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  redis_data:

@@ -1,0 +1,63 @@
+{
+  "family": "auditsmart-quantum",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "8192",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/auditsmart-quantum-task-role",
+  "containerDefinitions": [
+    {
+      "name": "auditsmart-quantum",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/auditsmart-quantum:latest",
+      "portMappings": [
+        {
+          "containerPort": 8001,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "LOG_FORMAT",           "value": "json" },
+        { "name": "LOG_LEVEL",            "value": "INFO" },
+        { "name": "WORKERS",              "value": "4" },
+        { "name": "AUDIT_TIMEOUT_SECONDS","value": "120" },
+        { "name": "RATE_LIMIT_AUDIT",     "value": "10/minute" }
+      ],
+      "secrets": [
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:auditsmart/redis-url"
+        },
+        {
+          "name": "RATE_LIMIT_STORAGE",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:auditsmart/redis-url"
+        },
+        {
+          "name": "ALLOWED_ORIGINS",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:auditsmart/allowed-origins"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/auditsmart-quantum",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8001/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "stopTimeout": 30
+    }
+  ]
+}
